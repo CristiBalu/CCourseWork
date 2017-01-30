@@ -1,0 +1,11 @@
+Both C and Unix strike a very good
+balance among expressiveness, efficiency and
+economy of means. That means that they
+are a good base to build on: the good ideas
+are worth stealing and the efficiency sets a
+standard of comparison. It's also easier for
+people to make a transition from
+something familiar than to make a big change,
+so a language or system that has significant
+elements of familiarity is more
+likely to be a success.
