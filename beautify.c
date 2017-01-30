@@ -16,20 +16,18 @@
 #define BASE_TEN     10
 #define asd           65
 
-char **words;
-int  lastWords[100];
 
 int  fileByteSize(FILE *file);
-void beautify(int wordLengths[], int numberOfWords, int width);
 
 int main(int argc, char* argv[]){
   FILE *inputFile, *outputFile;
   char *inputFilePath, *outputFilePath;
   int  width;
   char *paragraph;
-  int  length = 0, count = 1;
-  char prec = ' ';
+  int  length = 0, wordCount, i;
   char *word;
+  char prec;
+  char **words;
   int  *wordLengths;
 
   if(argc != VALID_ARG_NO){
@@ -53,38 +51,44 @@ int main(int argc, char* argv[]){
   }
 
   paragraph = (char *)malloc(fileByteSize(inputFile));// Allocate space to fit the content
+  wordCount = -1;                                     // Do not count eof as a word
+  prec = ' ';
 
   while(!feof(inputFile)){
     char c = fgetc(inputFile);
+
     if(c != '\n')
+    {
       paragraph[length++] = c;
+
+      if(c != ' ' && prec == ' '){                   // Count the number of words
+          wordCount++;
+      }
+
+      prec = c;
+    }
     else{
       paragraph[length++] = ' ';
+      wordCount++;
     }
-
-    if(paragraph[length - 1] != ' ' && prec == ' '){  // Count the number of words
-      count++;
-    }
-
-    prec = paragraph[length - 1];
   }
 
-  words = (char **) malloc(count * sizeof(char *));   // Allocate space for array of words
-  wordLengths = (int*) malloc(count * sizeof(int));
+  words = (char **) malloc(wordCount * sizeof(char *));// Allocate space for array of words
+  wordLengths = (int*) malloc(wordCount * sizeof(int));
   word = strtok(paragraph, " \n");
-  count = 0;
-  words[count] = word;
-  wordLengths[count] = strlen(word);
+  wordCount = 0;
+  words[wordCount] = word;
+  wordLengths[wordCount] = strlen(word);
 
   while(word != NULL){                                // Build the array of words
     word = strtok(NULL, " ");
 
     if(word != NULL){
-      count++;
-      words[count] = (char *) malloc(sizeof(word));
-      words[count] = word;
-      wordLengths[count] = (int) malloc(sizeof(int));
-      wordLengths[count] = strlen(word);
+      wordCount++;
+      words[wordCount] = (char *) malloc(sizeof(word));
+      words[wordCount] = word;
+      wordLengths[wordCount] = (int) malloc(sizeof(int));
+      wordLengths[wordCount] = strlen(word);
     }
   }
 
