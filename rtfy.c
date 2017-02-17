@@ -3,7 +3,7 @@
 #include <string.h>
 #include <limits.h>
 
-#define EMPTY_QUEUE           NULL
+#define EMPTY_LIST           NULL
 #define DELIM                 ",\n"
 
 #define OUT_OF_MEMORY_ERR_MSG "Out of memory\n"
@@ -22,10 +22,10 @@ struct Node{
 };
 typedef struct Node Node;
 
-Node *enqueue(Node *queue, char *value);
-Node *dequeue(Node *queue);
-char *head(Node *queue);
-int  findNode(Node *queue, char *value);
+Node *push_back(Node *list, char *value);
+Node *pop_front(Node *list);
+char *head(Node *list);
+int  findNode(Node *list, char *value);
 Node *removeNode(Node *list, char *value);
 void memoryCheck(void *pointer);
 void exitWithMessage(char *message);
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]){
   memoryCheck(adjacencies);
 
   for(i = 0; i < nStations; i++){       // Initialize the adjacency array with empty lists
-    adjacencies[i] = EMPTY_QUEUE;
+    adjacencies[i] = EMPTY_LIST;
   }
 
   copy = strdup(input);                 // Extract stations from a copy of the input
@@ -91,7 +91,7 @@ int main(int argc, char *argv[]){
         station = station + 1;
       }
 
-      adjacencies[i] = enqueue(adjacencies[i], station);
+      adjacencies[i] = push_back(adjacencies[i], station);
 
       if(delimUsed == '\n' && i < nStations - 1){ // Increment if newline
         i++;
@@ -149,7 +149,7 @@ Node *neighbours(Node **adjacencies, int nStations, char *station){
       }
     }
 
-    return EMPTY_QUEUE;
+    return EMPTY_LIST;
 }
 
 /*
@@ -163,7 +163,7 @@ Node *neighbours(Node **adjacencies, int nStations, char *station){
 */
 Node *removeNode(Node *list, char *value){
   Node *temp = list;
-  Node *prev = EMPTY_QUEUE;
+  Node *prev = EMPTY_LIST;
 
   if(temp == NULL){
     return NULL;
@@ -183,9 +183,9 @@ Node *removeNode(Node *list, char *value){
     temp=temp->next;
   }
 
-  if(temp != EMPTY_QUEUE){
+  if(temp != EMPTY_LIST){
     if(prev == NULL){
-      return dequeue(list);
+      return pop_front(list);
     }
     prev->next = temp->next;
   }
@@ -199,22 +199,22 @@ void dijkstra(Node **adjacencies, int nStations, char *source, char *destination
     int removedNodes[nStations];
     int sourceIndex = getIndexByName(adjacencies, nStations, source);
     int i;
-    Node *stations = EMPTY_QUEUE;
+    Node *stations = EMPTY_LIST;
 
     for(i = 0; i < nStations; i++){
       distances[i] = INT_MAX;
       prev[i] = -1;
       removedNodes[i] = 0;
-      stations = enqueue(stations, adjacencies[i]->value);
+      stations = push_back(stations, adjacencies[i]->value);
     }
 
     distances[sourceIndex] = 0;
 
-    while(stations != EMPTY_QUEUE)
+    while(stations != EMPTY_LIST)
     {
       int min = INT_MAX;
       int pos = -1;
-      Node *adjacentNodes = EMPTY_QUEUE;
+      Node *adjacentNodes = EMPTY_LIST;
 
       for(i = 0; i < nStations; i++){
         if(!removedNodes[i] && distances[i] < min){
@@ -237,7 +237,7 @@ void dijkstra(Node **adjacencies, int nStations, char *source, char *destination
       removedNodes[pos] = 1;
       adjacentNodes = neighbours(adjacencies, nStations, adjacencies[pos]->value);
 
-      while(adjacentNodes != EMPTY_QUEUE){
+      while(adjacentNodes != EMPTY_LIST){
         int temp = distances[pos] + 1;
         int neighbourIndex = getIndexByName(adjacencies, nStations, adjacentNodes->value);
 
@@ -260,10 +260,10 @@ void dijkstra(Node **adjacencies, int nStations, char *source, char *destination
 *
 * Returns 1 if a node with the seeked value exists in the list and 0 otherwise.
 */
-int findNode(Node *queue, char *value){
-  Node *it = queue;
+int findNode(Node *list, char *value){
+  Node *it = list;
 
-  while(it != queue){
+  while(it != list){
     if(!strcmp(it->value, value)){
       return TRUE;
     }
@@ -296,9 +296,9 @@ int getIndexByName(Node **adjacencies, int nStations, char *station){
 *
 * Returns the same list with the new node inserted at the end
 */
-Node *enqueue(Node *queue, char *value){
-  Node *temp = EMPTY_QUEUE;
-  Node *newNode = EMPTY_QUEUE;
+Node *push_back(Node *list, char *value){
+  Node *temp = EMPTY_LIST;
+  Node *newNode = EMPTY_LIST;
 
   newNode = (Node*) malloc(sizeof(Node));
   memoryCheck(newNode);
@@ -308,21 +308,21 @@ Node *enqueue(Node *queue, char *value){
   }
 
   newNode->value = value;
-  newNode->next = EMPTY_QUEUE;
+  newNode->next = EMPTY_LIST;
 
-  if(queue == EMPTY_QUEUE){
+  if(list == EMPTY_LIST){
     return newNode;
   }
 
-  temp = queue;
+  temp = list;
 
-  while(temp->next != EMPTY_QUEUE){ // Insert the node after the last node
+  while(temp->next != EMPTY_LIST){ // Insert the node after the last node
     temp = temp->next;
   }
 
   temp->next = newNode;
 
-  return queue;
+  return list;
 }
 
 /*
@@ -333,30 +333,30 @@ Node *enqueue(Node *queue, char *value){
 *
 * Returns the list without the first node
 */
-Node *dequeue(Node *queue){
-  Node *temp = EMPTY_QUEUE;
+Node *pop_front(Node *list){
+  Node *temp = EMPTY_LIST;
 
-  if(queue == EMPTY_QUEUE){
+  if(list == EMPTY_LIST){
     exitWithMessage(EMPTY_LIST_ERR_MSG);
   }
 
-  if(queue->next == EMPTY_QUEUE){
-    return EMPTY_QUEUE;
+  if(list->next == EMPTY_LIST){
+    return EMPTY_LIST;
   }
 
-  temp = queue->next;
-  free(queue);
+  temp = list->next;
+  free(list);
 
   return temp;
 }
 
-char *head(Node *queue){
+char *head(Node *list){
 
-  if(queue == EMPTY_QUEUE){
+  if(list == EMPTY_LIST){
     exitWithMessage(EMPTY_LIST_ERR_MSG);
   }
 
-  return queue->value;
+  return list->value;
 }
 
 /**
