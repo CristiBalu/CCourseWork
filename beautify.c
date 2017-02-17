@@ -12,17 +12,26 @@
 #include <string.h>
 #include <limits.h>
 
+#define ARG_NO_ERR_MSG        "You must enter four arguments\n"
+#define INV_WIDTH_ERR_MSG     "The second argument must be a positive integer\n"
+#define IN_FILE_ERR_MSG       "Could not open the input file\n"
+#define OUT_FILE_ERR_MSG      "Could not create the output file\n"
+#define OUT_OF_MEMORY_ERR_MSG "Out of memory\n"
+#define WORD_LEN_ERR_MSG      "The length of a word is bigger than the line width\n"
+
 #define VALID_ARG_NO 5
 #define BASE_TEN     10
+#define DELIM        " "
+#define INV_LEN      -1
 
 int fileByteSize(FILE *file);
 int wordsTotalLength(char **words, int left, int right);
-int badness(char **words, int left, int right, int width);
-void beautify(char **words, int wordCount, int width);
+void beautify(char **words, int wordCount, int width, FILE *outputFile);
+void exitWithMessage(char *message);
+void memoryCheck(void *pointer);
 
 int main(int argc, char* argv[]){
   FILE *inputFile, *outputFile;
-  char *inputFilePath, *outputFilePath;
   int  width;
   char *paragraph;
   int  length = 0, wordCount;
@@ -31,26 +40,22 @@ int main(int argc, char* argv[]){
   char **words;
 
   if(argc != VALID_ARG_NO){
-    printf("You must enter four arguments!");
-    return EXIT_FAILURE;
+    exitWithMessage(ARG_NO_ERR_MSG);
   }
 
-  inputFilePath  = argv[3];
-  outputFilePath = argv[4];
   width = strtol(argv[2], NULL, BASE_TEN);  // Convert input to int. Returns 0 if invalid
 
   // If the width was not an integer or was negative
-  if((width == 0 && strcmp(argv[2], "0")) || width < 0){
-    printf("The second argument MUST be a positive integer");
-    return EXIT_FAILURE;
+  if(((width == 0 && !strcmp(argv[2], "0"))) || width < 0){
+    exitWithMessage(INV_WIDTH_ERR_MSG);
   }
 
-  if(!(inputFile = fopen(inputFilePath, "r"))){       // Try to open the input file
-    printf("Could not open the input file!\n");
-    return EXIT_FAILURE;                              // If failed, exit with error
+  if(!(inputFile = fopen(argv[3], "r"))){             // Try to open the input file
+    exitWithMessage(IN_FILE_ERR_MSG);
   }
 
   paragraph = (char *)malloc(fileByteSize(inputFile));// Allocate space to fit the content
+  memoryCheck(paragraph);
   wordCount = -1;                                     // Do not count eof as a word
   prec = ' ';
 
@@ -74,16 +79,22 @@ int main(int argc, char* argv[]){
   }
 
   words = (char **) malloc(wordCount * sizeof(char *));// Allocate space for array of words
-  word = strtok(paragraph, " \n");
+  memoryCheck(words);
+  word = strtok(paragraph, DELIM);
   wordCount = 0;
   words[wordCount] = word;
 
   while(word != NULL){                                // Build the array of words
-    word = strtok(NULL, " ");
+    word = strtok(NULL, DELIM);
 
     if(word != NULL){
+      if(strlen(word) > width){
+        exitWithMessage(WORD_LEN_ERR_MSG);
+      }
+
       wordCount++;
       words[wordCount] = (char *) malloc(sizeof(word));
+      memoryCheck(words[wordCount]);
       words[wordCount] = word;
     }
   }
@@ -91,14 +102,26 @@ int main(int argc, char* argv[]){
   fclose(inputFile);
 
   if(!(outputFile = fopen(argv[4], "w"))){
-    printf("Could not create the input file!\n");
-    return EXIT_FAILURE;
+    exitWithMessage(OUT_FILE_ERR_MSG);
   }
 
-  beautify(words, wordCount, width);
-
+  beautify(words, wordCount, width, outputFile);
   fclose(outputFile);
+
   return EXIT_SUCCESS;
+}
+
+
+/*
+* Checks if a pointer is null and exits with an error message if so.
+*
+* Arguments:
+* pointer - the pointer to be checked
+*/
+void memoryCheck(void *pointer){
+  if(pointer == NULL){
+    exitWithMessage(OUT_OF_MEMORY_ERR_MSG);
+  }
 }
 
 /**
@@ -124,9 +147,23 @@ int fileByteSize(FILE *file){
   return size;
 }
 
+/*
+* Calculates the length of a sequence of words
+*
+* Arguments:
+* words - the array of words
+* left - the left bound of the desired sequence
+* right - the right bound of the desired sequence
+*
+* Returns the length of the sequence or -1 if it could not be calculated
+*/
 int wordsTotalLength(char **words, int left, int right){
   int totalLength = 0;
   int i;
+
+  if(left > right){
+    return INV_LEN;
+  }
 
   for(i = left; i <= right; i++){
     totalLength += strlen(words[i]);
@@ -135,17 +172,12 @@ int wordsTotalLength(char **words, int left, int right){
   return totalLength;
 }
 
-int badness(char **words, int left, int right, int width){
-  int lineLength = wordsTotalLength(words, left, right);
-  if(lineLength > width){
-    return INT_MAX;
-  }
-  else{
-    return (width - lineLength) * (width - lineLength) * (width - lineLength);
-  }
-}
-
-void beautify(char **words, int wordCount, int width){
+/*
+* Uses a dynamic programming approach to find out which words go on which lines, given
+* the width of the line. Then it inserts spaces on a round robin basis in between the
+* words of each line.
+*/
+void beautify(char **words, int wordCount, int width, FILE *outputFile){
   int cost[wordCount][wordCount];
   int mincost[wordCount];
   int result[wordCount];
@@ -159,6 +191,7 @@ void beautify(char **words, int wordCount, int width){
     }
   }
 
+  // Calculate the words for each line so that the amount of spaces is minimum
   for(i=0; i < wordCount; i++){
       for(j = 0; j < wordCount ; j++){
           if(cost[i][j] < 0)
@@ -180,6 +213,7 @@ void beautify(char **words, int wordCount, int width){
       }
   }
   i = 0;
+  // Insert spaces in between the word to match the line length
   do{
     int spacesToInsert;
     int *spacesPerWord;
@@ -199,15 +233,21 @@ void beautify(char **words, int wordCount, int width){
       else{cnt++;}
     }
 
+    // Print the beautified paragraph to the output file
     for(k = i; k < j; k++){
-      int u;  
-      printf("%s", words[k]);
+      int u;
+      fprintf(outputFile, "%s", words[k]);
       for(u = 0; u < spacesPerWord[k - i]; u++){
-        printf(" ");
+        fprintf(outputFile, " ");
       }
     }
 
-    printf("\n");
+    fprintf(outputFile, "\n");
     i = j;
   } while(j < wordCount);
+}
+
+void exitWithMessage(char *message){
+  fprintf(stderr, message);
+  exit(1);
 }

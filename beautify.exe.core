@@ -1,23 +1,21 @@
 [main] beautify 1000 (0) exception: trapped!
-[main] beautify 1000 (0) exception: code 0xC0000005 at 0x61055899
-[main] beautify 1000 (0) exception: ax 0x139 bx 0x139 cx 0x53 dx 0x139
-[main] beautify 1000 (0) exception: si 0x0 di 0x2449E38 bp 0x2449C00 sp 0x2449BFC
+[main] beautify 1000 (0) exception: code 0xC0000005 at 0x6105587C
+[main] beautify 1000 (0) exception: ax 0x418 bx 0x418 cx 0x418 dx 0x418
+[main] beautify 1000 (0) exception: si 0x2 di 0xC bp 0x244FD88 sp 0x244FD84
 [main] beautify 1000 (0) exception: exception is: STATUS_ACCESS_VIOLATION
 [main] beautify 1000 (0) stack: Stack trace:
-[main] beautify 1000 (0) stack: frame 0: sp = 0x2449608, pc = 0x6100A2C3
-[main] beautify 1000 (0) stack: frame 1: sp = 0x2449644, pc = 0x771C2D72
-[main] beautify 1000 (0) stack: frame 2: sp = 0x2449668, pc = 0x771C2D44
-[main] beautify 1000 (0) stack: frame 3: sp = 0x2449734, pc = 0x771B08EF
-[main] beautify 1000 (0) stack: frame 4: sp = 0x2449C00, pc = 0x61058EA4
-[main] beautify 1000 (0) stack: frame 5: sp = 0x2449E98, pc = 0x6105845C
-[main] beautify 1000 (0) stack: frame 6: sp = 0x2449EB0, pc = 0x61053F31
-[main] beautify 1000 (0) stack: frame 7: sp = 0x2449EC8, pc = 0x401A77
-[main] beautify 1000 (0) stack: frame 8: sp = 0x244FEA0, pc = 0x401391
-[main] beautify 1000 (0) stack: frame 9: sp = 0x244FEE4, pc = 0x61004402
-[main] beautify 1000 (0) stack: frame 10: sp = 0x244FF48, pc = 0x61004420
-[main] beautify 1000 (0) stack: frame 11: sp = 0x244FF54, pc = 0x401C2E
-[main] beautify 1000 (1) stack: frame 12: sp = 0x244FF64, pc = 0x40103A
-[main] beautify 1000 (0) stack: frame 13: sp = 0x244FF80, pc = 0x756A62C4
-[main] beautify 1000 (0) stack: frame 14: sp = 0x244FF94, pc = 0x771A0FD9
-[main] beautify 1000 (0) stack: frame 15: sp = 0x244FFDC, pc = 0x771A0FA4
-[main] beautify 1000 (0) stack: End of stack trace (more stack frames may be present)
+[main] beautify 1000 (0) stack: frame 0: sp = 0x244F790, pc = 0x6100A2C3
+[main] beautify 1000 (0) stack: frame 1: sp = 0x244F7CC, pc = 0x76F52D72
+[main] beautify 1000 (0) stack: frame 2: sp = 0x244F7F0, pc = 0x76F52D44
+[main] beautify 1000 (1) stack: frame 3: sp = 0x244F8BC, pc = 0x76F408EF
+[main] beautify 1000 (0) stack: frame 4: sp = 0x244FD88, pc = 0x401869
+[main] beautify 1000 (0) stack: frame 5: sp = 0x244FE9C, pc = 0x4013EF
+[main] beautify 1000 (0) stack: frame 6: sp = 0x244FEE4, pc = 0x61004402
+[main] beautify 1000 (0) stack: frame 7: sp = 0x244FF48, pc = 0x61004420
+[main] beautify 1000 (0) stack: frame 8: sp = 0x244FF54, pc = 0x40206E
+[main] beautify 1000 (0) stack: frame 9: sp = 0x244FF64, pc = 0x40103A
+[main] beautify 1000 (0) stack: frame 10: sp = 0x244FF80, pc = 0x73E662C4
+[main] beautify 1000 (0) stack: frame 11: sp = 0x244FF94, pc = 0x76F30FD9
+[main] beautify 1000 (0) stack: frame 12: sp = 0x244FFDC, pc = 0x76F30FA4
+[main] beautify 1000 (0) stack: frame 13: sp = 0x244FFEC, pc = 0x0
+[main] beautify 1000 (0) stack: End of stack trace
