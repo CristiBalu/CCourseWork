@@ -1,42 +1,88 @@
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-typedef struct Station{
-  char *name;
-  char **neighbours;
-} Station;
+#define INPUT_FILE_NAME "adjacencies.txt"
+#define MAX_LINE_SIZE 4096
 
-int main(int argc, char *argv[]){
-  FILE    *inputFile;
-  char    *depart;
-  char    *arrive;
-  Station *stations;
-  int     numberOfStations = 0;
-  char    *line;
+struct List{
+  char        *value;
+  struct List *next;
+};
 
-  if(argc != 3){
-    printf("You must enter exactly two arguments");
-    return EXIT_FAILURE;
+struct HashTable{
+  int         size;
+  struct List **buckets;
+};
+
+struct List       *mkList(char *value, struct List *next);
+struct HashTable  *mkHashTable(int size);
+int               hash(char* s);
+void              addStation(char *s, struct HashTable *hashTable);
+
+int main(){
+  FILE              *adjacenciesFile;
+  struct HashTable  *adjacencies;
+  char              line[MAX_LINE_SIZE];
+
+  if(!(adjacenciesFile = fopen(INPUT_FILE_NAME, "r"))){
+    fprintf(stderr, "Could not open the input file!");
+    exit(1);
   }
 
-  depart = argv[1];
-  arrive = argv[2];
-
-  if((inputFile = fopen("adjacencies.txt", "r")) == NULL){  // Opening input file failed
-    printf("Could not open the input file!\n");
-    return EXIT_FAILURE;                                // Exit the program with an error
+  while(fgets(line, sizeof(line), adjacenciesFile)){
+    printf("%s", line);
   }
-
-  while(fgets(line, 2, inputFile)){
-    numberOfStations++;
-  }
-  stations = (Station *) malloc(sizeof(Station) * numberOfStations);
-  numberOfStations = 0;
-  while(fgets(line, 2, inputFile)){
-    stations[numberOfStations++] =
-  }
-
-  fclose(inputFile);
 
   return EXIT_SUCCESS;
+}
+
+struct List *mkList(char *value, struct List *next){
+  struct List *newList = (struct List *) malloc (sizeof(struct List));
+
+  if(!newList){
+    fprintf(stderr, "mkList newList: Out of memory!\n");
+    exit(1);
+  }
+
+  newList->value = value;
+  newList->next = next;
+
+  return newList;
+}
+
+struct HashTable *mkHashTable(int size){
+  int i;
+  struct HashTable *newHashTable = (struct HashTable*) malloc (sizeof(struct HashTable));
+
+  if(newHashTable == NULL){
+    exit(1);
+  }
+
+  newHashTable->size = size;
+  newHashTable->buckets = (struct List**) malloc(sizeof(struct List) * size);
+
+  for (i = 0; i < size; i++){
+    newHashTable->buckets[i] = NULL;
+  }
+
+  return newHashTable;
+}
+
+void addStation(char *s, struct HashTable *hashTable){
+  int h = hash(s);
+  int pos = h % hashTable->size;
+
+  hashTable->buckets[pos] = mkList(s, hashTable->buckets[pos]);
+}
+
+int hash(char* s){
+	int i;
+	int h = 0;
+
+	for(i = 0; i < strlen(s); i++){
+		h = h + (int) s[i];
+	}
+
+	return h;
 }

@@ -1,3 +1,15 @@
-Baker Street, Bond Street, Regent’s Park
-Bond Street, Baker Street, Green Park, Marble Arch, Oxford Circus
-Charing Cross, Piccadilly Circus, Leicester Square
+ Baker Street, Bond Street, Regent's Park
+ Bond Street, Baker Street, Green Park, Marble Arch, Oxford Circus
+ Charing Cross, Piccadilly Circus, Leicester Square
+ Marble Arch, Bond Street
+ Green Park, Bond Street, Oxford Circus, Piccadilly Circus
+ Regent's Park, Baker Street, Oxford Circus
+ Oxford Circus, Regent's Park, Green Park, Piccadilly Circus, Bond Street, Warren Street, Tottenham Court Road
+ Piccadilly Circus, Leicester Square, Charing Cross, Green Park, Oxford Circus
+ Warren Street, Oxford Circus, Goodge Street
+ Goodge Street, Warren Street, Tottenham Court Road
+ Tottenham Court Road, Goodge Street, Holborn, Leicester Square, Oxford Circus
+ Leicester Square, Tottenham Court Road, Covent Garden, Charing Cross, Piccadilly Circus
+ Covent Garden, Holborn, Leicester Square
+ Holborn, Tottenham Court Road, Covent Garden, Chancery Lane
+ Chancery Lane, Holborn

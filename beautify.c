@@ -14,21 +14,21 @@
 
 #define VALID_ARG_NO 5
 #define BASE_TEN     10
-#define asd           65
 
-
-int  fileByteSize(FILE *file);
+int fileByteSize(FILE *file);
+int wordsTotalLength(char **words, int left, int right);
+int badness(char **words, int left, int right, int width);
+void beautify(char **words, int wordCount, int width);
 
 int main(int argc, char* argv[]){
   FILE *inputFile, *outputFile;
   char *inputFilePath, *outputFilePath;
   int  width;
   char *paragraph;
-  int  length = 0, wordCount, i;
+  int  length = 0, wordCount;
   char *word;
   char prec;
   char **words;
-  int  *wordLengths;
 
   if(argc != VALID_ARG_NO){
     printf("You must enter four arguments!");
@@ -74,11 +74,9 @@ int main(int argc, char* argv[]){
   }
 
   words = (char **) malloc(wordCount * sizeof(char *));// Allocate space for array of words
-  wordLengths = (int*) malloc(wordCount * sizeof(int));
   word = strtok(paragraph, " \n");
   wordCount = 0;
   words[wordCount] = word;
-  wordLengths[wordCount] = strlen(word);
 
   while(word != NULL){                                // Build the array of words
     word = strtok(NULL, " ");
@@ -87,8 +85,6 @@ int main(int argc, char* argv[]){
       wordCount++;
       words[wordCount] = (char *) malloc(sizeof(word));
       words[wordCount] = word;
-      wordLengths[wordCount] = (int) malloc(sizeof(int));
-      wordLengths[wordCount] = strlen(word);
     }
   }
 
@@ -98,6 +94,8 @@ int main(int argc, char* argv[]){
     printf("Could not create the input file!\n");
     return EXIT_FAILURE;
   }
+
+  beautify(words, wordCount, width);
 
   fclose(outputFile);
   return EXIT_SUCCESS;
@@ -124,4 +122,92 @@ int fileByteSize(FILE *file){
   fseek(file, 0, 0);          // Place the indicator back at the beginning
 
   return size;
+}
+
+int wordsTotalLength(char **words, int left, int right){
+  int totalLength = 0;
+  int i;
+
+  for(i = left; i <= right; i++){
+    totalLength += strlen(words[i]);
+  }
+
+  return totalLength;
+}
+
+int badness(char **words, int left, int right, int width){
+  int lineLength = wordsTotalLength(words, left, right);
+  if(lineLength > width){
+    return INT_MAX;
+  }
+  else{
+    return (width - lineLength) * (width - lineLength) * (width - lineLength);
+  }
+}
+
+void beautify(char **words, int wordCount, int width){
+  int cost[wordCount][wordCount];
+  int mincost[wordCount];
+  int result[wordCount];
+  int i, j, k;
+
+  for(i = 0; i < wordCount; i++){
+    cost[i][i] = width - strlen(words[i]);
+
+    for(j = i + 1; j < wordCount; j++){
+      cost[i][j] = cost[i][j - 1] - strlen(words[j]) - 1;
+    }
+  }
+
+  for(i=0; i < wordCount; i++){
+      for(j = 0; j < wordCount ; j++){
+          if(cost[i][j] < 0)
+              cost[i][j] = INT_MAX;
+          else
+              cost[i][j] = cost[i][j] * cost[i][j];
+      }
+  }
+  for(i = wordCount; i >= 0; i--){
+      mincost[i] = cost[i][wordCount - 1];
+      result[i] = wordCount;
+      for(j = wordCount - 1; j > i; j--){
+          if(cost[i][j-1] == INT_MAX)
+              continue;
+          if(mincost[i] > mincost[j] + cost[i][j-1]){
+              mincost[i] = mincost[j]+cost[i][j-1];
+              result[i] = j;
+          }
+      }
+  }
+  i = 0;
+  do{
+    int spacesToInsert;
+    int *spacesPerWord;
+    int cnt = 0;
+
+    j = result[i];
+    spacesToInsert = width - wordsTotalLength(words, i, j - 1);
+    spacesPerWord = (int *) malloc(sizeof(int) * (j - i));
+
+    for(k = 0; k < j - i; k++){
+      spacesPerWord[k] = 0;
+    }
+
+    for(k = 0; k < spacesToInsert; k++){
+      spacesPerWord[cnt] += 1;
+      if(cnt == j - i - 1){cnt = 0;}
+      else{cnt++;}
+    }
+
+    for(k = i; k < j; k++){
+      int u;  
+      printf("%s", words[k]);
+      for(u = 0; u < spacesPerWord[k - i]; u++){
+        printf(" ");
+      }
+    }
+
+    printf("\n");
+    i = j;
+  } while(j < wordCount);
 }
