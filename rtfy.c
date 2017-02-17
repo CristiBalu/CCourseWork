@@ -11,8 +11,11 @@
 #define ARG_NO_ERR_MSG        "You must enter three arguments\n"
 #define INVALID_STN_ERR_MSG   "You entered invalid station names\n"
 #define EMPTY_LIST_ERR_MSG    "Failed to remove from or inspect an empty list\n"
+#define SD_NOT_FOUND_ERR_MSG  "The source or destination does not exist in the graph\n"
+#define NO_PATH_ERR_MSG       "There is no path between the source and the destination\n"
 
 #define VALID_ARG_NO  4
+#define INVALID_INDEX -1
 #define TRUE          1
 #define FALSE         0
 
@@ -23,10 +26,12 @@ struct Node{
 typedef struct Node Node;
 
 Node *push_back(Node *list, char *value);
+Node *push_front(Node *list, char *value);
 Node *pop_front(Node *list);
 char *head(Node *list);
 int  findNode(Node *list, char *value);
 Node *removeNode(Node *list, char *value);
+void printList(Node *list);
 void memoryCheck(void *pointer);
 void exitWithMessage(char *message);
 int  fileByteSize(FILE *file);
@@ -100,7 +105,13 @@ int main(int argc, char *argv[]){
     station = strtok(NULL, DELIM);
   }
 
-  dijkstra(adjacencies, nStations, source, destination);
+  // Check if the input source and destination are nodes in the given graph
+  if(getIndexByName(adjacencies, nStations, source) == INVALID_INDEX ||
+     getIndexByName(adjacencies, nStations, destination) == INVALID_INDEX){
+       exitWithMessage(SD_NOT_FOUND_ERR_MSG);
+  }
+
+  dijkstra(adjacencies, nStations, source, destination); // Print the shortest path
   free(input);
   free(adjacencies);
 
@@ -193,9 +204,20 @@ Node *removeNode(Node *list, char *value){
   return list;
 }
 
+/*
+* Uses the Dikstra algorithm to find and print the shortest path between two nodes in a
+* graph.
+*
+* Arguments:
+* adjacencies - the graph, an array of lists
+* nStations = the size of the graph
+* source - the value of the source node
+* destination - the value of the destination node
+*
+*/
 void dijkstra(Node **adjacencies, int nStations, char *source, char *destination){
-    int distances[nStations];
-    int prev[nStations];
+    int distances[nStations];    // From the source to all ather nodes
+    int prev[nStations];         // Most efficient previous node towards the source
     int removedNodes[nStations];
     int sourceIndex = getIndexByName(adjacencies, nStations, source);
     int i;
@@ -203,34 +225,38 @@ void dijkstra(Node **adjacencies, int nStations, char *source, char *destination
 
     for(i = 0; i < nStations; i++){
       distances[i] = INT_MAX;
-      prev[i] = -1;
-      removedNodes[i] = 0;
+      prev[i] = INVALID_INDEX;
+      removedNodes[i] = FALSE;
       stations = push_back(stations, adjacencies[i]->value);
     }
 
-    distances[sourceIndex] = 0;
+    distances[sourceIndex] = 0;   // The distance from the source to itself is 0
 
     while(stations != EMPTY_LIST)
     {
       int min = INT_MAX;
-      int pos = -1;
+      int pos = INVALID_INDEX;
       Node *adjacentNodes = EMPTY_LIST;
 
-      for(i = 0; i < nStations; i++){
+      for(i = 0; i < nStations; i++){                 // Min dist from the remaining nodes
         if(!removedNodes[i] && distances[i] < min){
           min = distances[i];
           pos = i;
         }
       }
 
-      if(!strcmp(adjacencies[pos]->value, destination)){
-        int u = getIndexByName(adjacencies, nStations, destination);
+      if(!strcmp(adjacencies[pos]->value, destination)){  // Destination found
+        int  u = getIndexByName(adjacencies, nStations, destination);
+        Node *path = EMPTY_LIST;
 
-        while(prev[u] != -1){
-          printf("%s ", adjacencies[u]->value);
+        while(prev[u] != INVALID_INDEX){
+          path = push_front(path, adjacencies[u]->value);
           u = prev[u];
         }
-        printf("%s ", source);
+
+        path = push_front(path, adjacencies[sourceIndex]->value);
+        printList(path);
+        break;
       }
 
       stations = removeNode(stations, adjacencies[pos]->value);
@@ -284,7 +310,7 @@ int getIndexByName(Node **adjacencies, int nStations, char *station){
     }
   }
 
-  return -1;
+  return INVALID_INDEX;
 }
 
 /*
@@ -323,6 +349,28 @@ Node *push_back(Node *list, char *value){
   temp->next = newNode;
 
   return list;
+}
+
+Node *push_front(Node *list, char *value){
+  Node *newNode = EMPTY_LIST;
+
+  newNode = (Node*) malloc(sizeof(Node));
+  memoryCheck(newNode);
+
+  if(!newNode){
+    exitWithMessage(OUT_OF_MEMORY_ERR_MSG);
+  }
+
+  newNode->value = value;
+  newNode->next = EMPTY_LIST;
+
+  if(list == EMPTY_LIST){
+    return newNode;
+  }
+
+  newNode->next = list;
+
+  return newNode;
 }
 
 /*
@@ -380,4 +428,16 @@ int fileByteSize(FILE *file){
   fseek(file, 0, 0);          // Place the indicator back at the beginning
 
   return size;
+}
+
+/*
+* Prints the node values of a list, separated by newlines
+*/
+void printList(Node *list){
+  Node *temp = list;
+
+  while(temp != EMPTY_LIST){
+    printf("%s\n", temp->value);
+    temp = temp->next;
+  }
 }

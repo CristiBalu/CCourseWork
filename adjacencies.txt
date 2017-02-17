@@ -9,7 +9,7 @@
  Warren Street, Oxford Circus, Goodge Street
  Goodge Street, Warren Street, Tottenham Court Road
  Tottenham Court Road, Goodge Street, Holborn, Leicester Square, Oxford Circus
- Leicester Square, Tottenham Court Road, Covent Garden, Charing Cross, Piccadilly Circus
+ Leicester Square, Covent Garden, Tottenham Court Road, Charing Cross, Piccadilly Circus
  Covent Garden, Holborn, Leicester Square
  Holborn, Tottenham Court Road, Covent Garden, Chancery Lane
  Chancery Lane, Holborn
